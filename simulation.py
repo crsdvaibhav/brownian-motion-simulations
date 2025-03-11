@@ -19,14 +19,15 @@ class ParticleSimulation:
         # Particle properties
         self.radius = 5
         self.position = np.array([self.width/2, self.height/2], dtype=float)
+        self.trail = []  # List to store trail line objects
         
         self.theta = 0.0
-        self.neta = 1  # Define the range for angular velocity
+        self.neta = 0.1  # Define the range for angular velocity
         self.angular_velocity = np.random.uniform(-self.neta, self.neta) 
         
         self.epsilon = 500  # Time interval in milliseconds for updating angular velocity
         
-        self.speed = 1 # Activity
+        self.speed = 0.4 # Activity
         self.velocity = np.array([
             self.speed * np.cos(self.theta),
             self.speed * np.sin(self.theta)
@@ -49,6 +50,7 @@ class ParticleSimulation:
             self.root.after(self.epsilon, self.update_angular_velocity)
 
     def update_position(self):
+        prev_position = self.position.copy()  # Store previous position
 
         self.theta += self.angular_velocity
         self.velocity = np.array([
@@ -63,6 +65,18 @@ class ParticleSimulation:
             self.velocity[0] = 0
             self.velocity[1] = 0
             self.angular_velocity = 0
+            self.speed = 0
+
+        # Draw trail (line from previous position to new position)
+        trail_segment = self.canvas.create_line(
+            prev_position[0], prev_position[1], self.position[0], self.position[1],
+            fill='blue', width=1
+        )
+        self.trail.append(trail_segment)
+
+        # Optional: Limit trail length for visual clarity
+        if len(self.trail) > 1000:  # Adjust this to control the fade effect
+            self.canvas.delete(self.trail.pop(0))
     
     def animate(self):
         
